@@ -82,3 +82,4 @@ def spiroraph():
         leonardo.pencolor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 screen.exitonclick()
+
