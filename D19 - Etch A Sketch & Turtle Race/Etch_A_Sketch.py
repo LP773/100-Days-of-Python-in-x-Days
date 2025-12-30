@@ -10,37 +10,46 @@ screen.colormode(255)
 color_list = [(252, 250, 245), (253, 245, 250), (238, 252, 244), (237, 243, 251), (244, 229, 50), (202, 7, 33), (237, 228, 2), (193, 67, 24), (221, 151, 81), (36, 210, 91), (240, 41, 122), (35, 92, 177), (32, 31, 156), (205, 11, 5), (16, 18, 53)]
 
 def move_forward():
+    """Moves the turtle forward."""
     tim.forward(10)
 
 def move_up():
+    """Faces the turtle north and moves forward."""
     tim.setheading(90)
     move_forward()
 
 def move_right():
+    """Faces the turtle east and moves forward."""
     tim.setheading(0)
     move_forward()
 
 def move_down():
+    """Faces the turtle south and moves forward."""
     tim.setheading(270)
     move_forward()
 
 def move_left():
+    """Faces the turtle west and moves forward."""
     tim.setheading(180)
     move_forward()
 
 def rotate_left():
+    """Rotates the turtle to the left"""
     rotation = 10
     tim.left(rotation)
 
 def rotate_right():
+    """Rotates the turtle to the right"""
     rotation = 10
     tim.right(rotation)
 
 def clear():
+    """Resets the turtle to home (0,0) and clears the screen."""
     tim.home()
     tim.clear()
 
 def pen_color():
+    """Randomly changes the color of the pen."""
     tim.color(random.choice(color_list))
 
 screen.listen()
