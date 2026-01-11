@@ -9,7 +9,7 @@ screen.setup(width=800, height=600)
 screen.title("Pong")
 screen.tracer(0)
 
-player1_paddle = Paddle(x_cor=-350, y_cor=0)
+player1_paddle = Paddle(x_cor=-360, y_cor=0)
 player2_paddle = Paddle(x_cor=350, y_cor=0)
 pong = Ball()
 
@@ -25,5 +25,13 @@ while game_on:
     screen.update()
     pong.move()
 
+    # Detect Ball Collision
+    if pong.ycor() > 280 or pong.ycor() < -275:
+        # Bounce
+        pong.bounce_y()
+
+    # Detect Collision with Paddles
+    if pong.distance(player2_paddle) < 50 and pong.xcor() > 325 or pong.distance(player1_paddle) < 50 and pong.xcor() < -335:
+        pong.bounce_x()
 
 screen.exitonclick()
