@@ -1,6 +1,7 @@
 from turtle import Turtle, Screen
 from paddle import Paddle
 from ball import Ball
+from scoreboard import Scoreboard
 import time
 
 screen = Screen()
@@ -12,6 +13,7 @@ screen.tracer(0)
 player1_paddle = Paddle(x_cor=-360, y_cor=0)
 player2_paddle = Paddle(x_cor=350, y_cor=0)
 pong = Ball()
+scoreboard = Scoreboard()
 
 screen.listen()
 screen.onkey(player1_paddle.move_w, "w")
@@ -21,7 +23,7 @@ screen.onkey(player2_paddle.move_down, "Down")
 
 game_on = True
 while game_on:
-    time.sleep(0.1)
+    time.sleep(pong.move_speed)
     screen.update()
     pong.move()
 
@@ -33,5 +35,13 @@ while game_on:
     # Detect Collision with Paddles
     if pong.distance(player2_paddle) < 50 and pong.xcor() > 325 or pong.distance(player1_paddle) < 50 and pong.xcor() < -335:
         pong.bounce_x()
+
+    # Score Detection
+    if pong.xcor() < -370:
+        pong.reset(winner=False)
+        scoreboard.increase_p2_score()
+    elif pong.xcor() > 370:
+        pong.reset(winner=True)
+        scoreboard.increase_p1_score()
 
 screen.exitonclick()
