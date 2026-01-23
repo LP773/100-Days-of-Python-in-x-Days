@@ -10,16 +10,41 @@ FONT_NAME = "Courier"
 WORK_MIN = 25
 SHORT_BREAK_MIN = 5
 LONG_BREAK_MIN = 20
+reps = 0
+timer = None
 
 # ---------------------------- TIMER RESET ------------------------------- # 
 def reset_pomodoro():
-    pass
+    global reps
+    pomodoro_gui.after_cancel(timer)
+    reps = 0
+    checkmark.config(text="")
+    timer_label.config(text="TIMER", fg=GREEN)
+    canvas.itemconfig(timer_text, text=f"0:00")
+
+
 # ---------------------------- TIMER MECHANISM ------------------------------- #
 def start_pomodoro():
-    count_down(WORK_MIN * 60)
+    global reps
+    reps += 1
+
+    work_sec = WORK_MIN * 60
+    short_break = SHORT_BREAK_MIN * 60
+    long_break = LONG_BREAK_MIN * 60
+
+    if reps % 8 == 0:
+        timer_label.config(text="BREAK", fg=RED)
+        count_down(long_break)
+    elif reps % 2 == 0:
+        timer_label.config(text="BREAK", fg=PINK)
+        count_down(short_break)
+    else:
+        timer_label.config(text="WORK", fg=GREEN)
+        count_down(work_sec)
 
 # ---------------------------- COUNTDOWN MECHANISM ------------------------------- # 
 def count_down(count):
+    global timer
     minute = math.floor(count / 60)
     second = count % 60
     if second == 0:
@@ -30,7 +55,11 @@ def count_down(count):
         second = "0" + str(second)
     canvas.itemconfig(timer_text, text=f"{minute}:{second}")
     if count > 0:
-        pomodoro_gui.after(1000, count_down, count - 1)
+        timer = pomodoro_gui.after(1000, count_down, count - 1)
+    else:
+        start_pomodoro()
+        if reps % 2 == 0:
+            checkmark.config(text="✓" * math.floor(reps / 2))
 
 # ---------------------------- UI SETUP ------------------------------- #
 #GUI Setup
@@ -46,14 +75,14 @@ timer_text = canvas.create_text(100, 130, text="0:00", fill="white", font=(FONT_
 
 #TK Elements
 timer_label = Label(bg=YELLOW, fg=GREEN, text="TIMER", font=(FONT_NAME, 35))
-checkmark = Label(bg=YELLOW, fg=GREEN, text="✓")
+checkmark = Label(bg=YELLOW, fg=GREEN)
 start_button = Button(bg=YELLOW, text="START",  command=start_pomodoro, highlightthickness=0, highlightbackground=YELLOW)
 reset_button = Button(text="RESET", command=reset_pomodoro, highlightthickness=0, highlightbackground=YELLOW)
 
 #Grid Setup
 timer_label.grid(column=2, row=0)
 canvas.grid(column=2, row=1)
-# checkmark.grid(column=2, row=5)
+checkmark.grid(column=2, row=5)
 start_button.grid(column=1, row=4)
 reset_button.grid(column=3, row=4)
 
