@@ -40,6 +40,12 @@ def add_password():
     website = website_entry.get()
     email = email_user_entry.get()
     password = password_entry.get()
+    new_data = {
+        website: {
+            "email": email,
+            "password": password
+        }
+    }
 
     if website == "" or password == "":
         messagebox.showerror("Error", "Please make sure to have the inputs for the website and password fields")
