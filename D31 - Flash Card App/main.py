@@ -1,44 +1,70 @@
 from tkinter import *
 import pandas as pd
 import random
+from pathlib import Path
+
+from pandas.errors import EmptyDataError
 
 BACKGROUND_COLOR = "#B1DDC6"
-french_to_english = {}
-french_word = ""
-english_word = ""
 
-def read_csv():
-    global french_to_english
+file = "./data/words_to_learn.csv"
+if Path(file).is_file():
+    try:
+        df = pd.read_csv(file)
+
+        if df.empty:
+            raise ValueError("No rows left")
+    except (EmptyDataError, ValueError):
+        df = pd.read_csv("./data/french_words.csv")
+else:
     df = pd.read_csv("./data/french_words.csv")
-    output = df.to_dict(orient="records")
+to_learn = df.to_dict(orient="records")
+current_card = {}
 
-    french_to_english = {row["French"]: row["English"] for row in output}
-    return french_to_english
+'''
+My solution that may have complicated things
+I'd like to potentially revisit and see if I can make it the program work with my original solution
+'''
+# french_to_english = {row["French"]: row["English"] for row in output}
+
 
 def new_card():
-    global french_to_english, french_word, english_word, flip_timer
+    global current_card, flip_timer
     flashy.after_cancel(flip_timer)
-    french_word = random.choice(list(french_to_english.keys()))
-    english_word = french_to_english[french_word]
+    current_card = random.choice(to_learn)
     canvas.itemconfig(card, image=flash_card_front)
     canvas.itemconfig(card_language, text=f"French", fill="black")
-    canvas.itemconfig(card_word, text=f"{french_word}", fill="black")
-    flip_timer = flashy.after(3000, flip_card)
+    canvas.itemconfig(card_word, text=f"{current_card["French"]}", fill="black")
+    flip_timer = flashy.after(3000, func=flip_card)
 
 def flip_card():
-    global french_to_english, french_word, english_word
-    english_word = french_to_english[french_word]
+    global current_card
     canvas.itemconfig(card, image=flash_card_back)
     canvas.itemconfig(card_language, text=f"English", fill="white")
-    canvas.itemconfig(card_word, text=f"{english_word}", fill="white")
+    canvas.itemconfig(card_word, text=f"{current_card["English"]}", fill="white")
 
-read_csv()
+def known():
+    global current_card
+    to_learn.remove(current_card)
+    pd.DataFrame(to_learn).to_csv("./data/words_to_learn.csv", index=FALSE)
+    new_card()
+
+    '''
+    In order to progress I'm going to watch the walkthrough and comment out
+    my attempt at trying to figure out how to use drop dataframes and create a new csv with known words
+    From what I'm seeing, I was overthinking/overengineering the solution
+    '''
+    # test_card = df.sample().iloc[0]
+    # print(test_card["French"], test_card["English"], test_card.name)
+    # new_df = df.drop(test_card.index)
+    # pd.write_csv("known_words.csv", new_df)
+
 
 flashy = Tk()
 flashy.title("Flashy")
 flashy.config(bg=BACKGROUND_COLOR, width=800, height=526, padx=50, pady=50)
 
-flip_timer = flashy.after(3000, flip_card)
+flip_timer = flashy.after(3000, func=flip_card)
 
 # Images
 correct_image = PhotoImage(file="./images/right.png")
@@ -54,7 +80,7 @@ card_word = canvas.create_text(400, 263, text=f"", font=("Arial", 60, "bold"), f
 canvas.grid(row=0, column=0, columnspan=2)
 
 # Buttons
-correct_button = Button(image=correct_image, highlightthickness=0, command=new_card)
+correct_button = Button(image=correct_image, highlightthickness=0, command=known)
 incorrect_button = Button(image=incorrect_image, highlightthickness=0, command=new_card)
 incorrect_button.grid(row=1, column=0)
 correct_button.grid(row=1, column=1)
