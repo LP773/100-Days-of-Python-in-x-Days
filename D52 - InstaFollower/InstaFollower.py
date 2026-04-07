@@ -9,7 +9,7 @@ import time
 
 dotenv.load_dotenv('.env')
 
-class InstaFollower():
+class InstaFollower:
     def __init__(self):
         self.driver = webdriver.Firefox()
         self.wait = WebDriverWait(self.driver, 10)
@@ -27,7 +27,6 @@ class InstaFollower():
         time.sleep(1)
         log_in_button.click()
 
-        #2FA not needed after the first completed 2FA
         # time.sleep(5)
         # code_submit = self.wait.until(ec.element_to_be_clickable((By.XPATH,
         #                                                      '/html/body/div[1]/div/div/div[2]/div/div/div[1]/div[1]/div[2]/div/div/div/div/div[3]/div/div[2]/div/div/div')))
@@ -40,13 +39,27 @@ class InstaFollower():
         notifications_no.click()
 
     def find_followers(self):
-        self.driver.get("https://www.instagram.com/boilingpointgroup/followers/")
+        self.driver.get("https://www.instagram.com/boilingpointgroup")
+        follower_open = self.wait.until(ec.presence_of_element_located((By.XPATH, '/html/body/div[1]/div/div/div[2]/div/div/div[1]/div[2]/div[2]/section/main/div/div/header/div/section[2]/div[1]/div[3]/div[2]/a/span')))
+        follower_open.click()
+
+        # follower_window = self.driver.find_elements(By.XPATH, '/html/body/div[4]/div[2]/div/div/div[1]/div/div[2]/div/div/div/div/div[2]/div/div/div[3]')
+        # for i in range(10):
+        #     self.driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", follower_window)
+        #     time.sleep(1)
 
     def follow(self):
-        pass
+        follow_buttons = self.driver.find_elements(By.CSS_SELECTOR, "div[class*='_aaco']")
+        follow = 1
+        for btn in follow_buttons:
+            btn.click()
+            time.sleep(1)
+            follow += 1
+            if follow == 5:
+                break
 
 bot = InstaFollower()
 bot.login()
-# bot.find_followers()
-# bot.follow()
+bot.find_followers()
+bot.follow()
 
