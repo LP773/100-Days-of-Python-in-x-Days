@@ -27,10 +27,12 @@ for i in range(len(address) - 1):
     address_list.append(address[i].text.split('\n')[1].strip())
 
 links_list = []
-links = soup.find_all("a", {"data-test": "property-card-link"})
+links = soup.select(".StyledPropertyCardDataWrapper a")
 
 for i in range(len(links) - 1):
     links_list.append(links[i].get('href'))
+
+print(links_list)
 
 driver = webdriver.Firefox()
 driver.get(form_url)
@@ -39,8 +41,6 @@ wait = WebDriverWait(driver, 10)
 for i in range(len(address_list) - 1):
     time.sleep(1)
     inputs = driver.find_elements(By.CSS_SELECTOR, "input.whsOnd")
-    # ppm_input = wait.until(presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/form/div[2]/div/div[2]/div[2]/div/div/div[2]/div/div[1]/div/div[1]/input")))
-    # link_input = wait.until(presence_of_element_located((By.XPATH, "/html/body/div[1]/div[3]/form/div[2]/div/div[2]/div[3]/div/div/div[2]/div/div[1]/div/div[1]/input")))
     submit_btn = wait.until(presence_of_element_located((By.CSS_SELECTOR, 'div[aria-label="Submit"]')))
 
     inputs[0].send_keys(address_list[i])
