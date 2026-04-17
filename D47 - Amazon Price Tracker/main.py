@@ -40,6 +40,6 @@ It is currently <b>{price}</b>.
         "text": message,
         "parse_mode": "HTML"
     }
-    yaab = requests.post(f"{API_ENDPOINT}{TOKEN}/sendMessage", params=parameters)
-    print(yaab.status_code, yaab.text)
+    telegram_send = requests.post(f"{API_ENDPOINT}{TOKEN}/sendMessage", params=parameters)
+    print(telegram_send.status_code, telegram_send.text)
 
