@@ -17,15 +17,22 @@ app = Flask(__name__)
 
 all_books = []
 
-
 @app.route('/')
 def home():
-    pass
+    return render_template('index.html', all_books=all_books)
 
-
-@app.route("/add")
+@app.route("/add", methods=['GET', 'POST'])
 def add():
-    pass
+    if request.method == 'POST':
+        resp_dict = {
+            'title': request.form.get('title'),
+            'author': request.form.get('author'),
+            'rating': request.form.get('rating'),
+        }
+        all_books.append(resp_dict)
+        return "<h1>Successfully added!</h1>"
+    else:
+        return render_template('add.html')
 
 
 if __name__ == "__main__":
