@@ -69,7 +69,7 @@ with app.app_context():
 
 @app.route("/")
 def home():
-    movies = Movie.query.all()
+    movies = db.session.execute(db.select(Movie).order_by(Movie.rating.desc())).scalars()
     return render_template("index.html", movie_list=movies)
 
 @app.route("/edit/<int:id>", methods=["GET", "POST"])
