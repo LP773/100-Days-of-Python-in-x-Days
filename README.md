@@ -12,3 +12,4 @@ x < 100 to x > 100 🫥
 - Skipped D41-44. HTML and CSS basics I've already done from Angela's other course, [The Complete Full-Stack Web Development Bootcamp](https://www.udemy.com/course/the-complete-web-development-bootcamp/). I have not completed it but have done a portion of it.
 - Skipped D50. Tinder requires facial verification to start swiping.
 - D54 - Introduction to Flask
+- D65 - Introduction to Web Design
