@@ -2,7 +2,7 @@
 Building my own API with RESTful routing
 
 ## Tasks
-- [ ] HTTP GET - a random Cafe
+- [X] HTTP GET - a random Cafe
 - [ ] HTTP GET - all the Cafes
 - [ ] HTTP GET - find a Cafe
 - [ ] HTTP POST - a new Cafe
