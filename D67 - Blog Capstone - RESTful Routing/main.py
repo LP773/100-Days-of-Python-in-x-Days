@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request
 from flask_bootstrap import Bootstrap5
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -10,6 +10,7 @@ from flask_ckeditor import CKEditor, CKEditorField
 from datetime import date
 
 app = Flask(__name__)
+ckeditor = CKEditor(app)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 Bootstrap5(app)
 
@@ -32,6 +33,15 @@ class BlogPost(db.Model):
 
 with app.app_context():
     db.create_all()
+
+# CONFIGURE WTForm
+class PostForm(FlaskForm):
+    title = StringField('Blog Post Title', validators=[DataRequired()])
+    subtitle = StringField('Subtitle', validators=[DataRequired()])
+    author = StringField('Your Name', validators=[DataRequired()])
+    img_url = StringField('Blog Image URL', validators=[DataRequired(), URL()])
+    body = CKEditorField('Blog Content', validators=[DataRequired()])
+    submit = SubmitField('Post')
 
 @app.route('/')
 def get_all_posts():
@@ -57,6 +67,33 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post)
 
 # TODO: add_new_post() to create a new blog post
+@app.route('/new-post', methods=['GET', 'POST'])
+def new_post():
+    new_post_form = PostForm()
+    if request.method == 'POST':
+        if new_post_form.validate_on_submit():
+            title = new_post_form.title.data
+            subtitle = new_post_form.subtitle.data
+            today = date.today().strftime("%B %d, %Y")
+            author = new_post_form.author.data
+            img_url = new_post_form.img_url.data
+            body = new_post_form.body.data
+
+            post = BlogPost(
+                title=title,
+                subtitle=subtitle,
+                date=today,
+                author=author,
+                img_url=img_url,
+                body=body,
+            )
+            db.session.add(post)
+            db.session.commit()
+            return redirect(url_for('get_all_posts'))
+        else:
+            return render_template("make-post.html", form=new_post_form)
+    else:
+        return render_template("make-post.html", form=new_post_form)
 
 # TODO: edit_post() to change an existing blog post
 
