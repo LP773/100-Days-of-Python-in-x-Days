@@ -59,11 +59,9 @@ def get_all_posts():
         })
     return render_template("index.html", all_posts=posts)
 
-# TODO: Add a route so that you can click on individual posts.
-@app.route('/')
+@app.route('/post/<int:post_id>', methods=['GET'])
 def show_post(post_id):
-    # TODO: Retrieve a BlogPost from the database based on the post_id
-    requested_post = "Grab the post from your database"
+    requested_post = db.session.get(BlogPost, post_id)
     return render_template("post.html", post=requested_post)
 
 # TODO: add_new_post() to create a new blog post
