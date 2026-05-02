@@ -3,6 +3,6 @@ A blog to HTTP routes to create, edit, and delete blog posts.
 ## Requirements
 - [X] Be able to GET blog post items
 - [X] Be able to POST a new blog post
-- [ ] Be able to edit existing blog posts
+- [X] Be able to edit existing blog posts
 - [ ] Be able to DELETE blog posts
 
