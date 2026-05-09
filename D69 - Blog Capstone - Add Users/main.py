@@ -1,5 +1,5 @@
 from datetime import date
-from flask import Flask, abort, render_template, redirect, url_for, flash
+from flask import Flask, abort, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_ckeditor import CKEditor
 #from flask_gravatar import Gravatar
@@ -10,7 +10,7 @@ from sqlalchemy import Integer, String, Text
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
-from forms import CreatePostForm, RegisterForm
+from forms import CreatePostForm, RegisterForm, LoginForm
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -23,8 +23,8 @@ login_manager.init_app(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    return Users.get(user_id)
-
+    return Users.query.get(user_id)
+    
 # CREATE DATABASE
 class Base(DeclarativeBase):
     pass
@@ -43,7 +43,6 @@ class BlogPost(db.Model):
     author: Mapped[str] = mapped_column(String(250), nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
 
-
 # TODO: Create a User table for all your registered users. 
 class Users(UserMixin, db.Model):
     __tablename__ = "users"
@@ -60,23 +59,45 @@ with app.app_context():
 def register():
     registration_form = RegisterForm()
     if registration_form.validate_on_submit():
-        new_user = Users(
-            email=registration_form.email.data,
-            password=generate_password_hash(registration_form.password.data, salt_length=8),
-            name=registration_form.name.data,
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        return redirect(url_for('get_all_posts'))
+        if Users.query.filter_by(email=registration_form.email.data).first():
+            flash("Email already registered, try logging in instead.", "danger")
+            return redirect(url_for("login"))
+        else:
+            new_user = Users(
+                email=registration_form.email.data,
+                password=generate_password_hash(registration_form.password.data, salt_length=8),
+                name=registration_form.name.data,
+            )
+            db.session.add(new_user)
+            db.session.commit()
+            login_user(new_user)
+            return redirect(url_for('get_all_posts'))
     return render_template("register.html", form=registration_form)
 
 # TODO: Retrieve a user from the database based on their email. 
-@app.route('/login')
+@app.route('/login', methods=["GET", "POST"])
 def login():
-    return render_template("login.html")
+    login_form = LoginForm()
+    if request.method == "POST":
+        email = request.form["email"]
+        password = request.form["password"]
+        user = Users.query.filter_by(email=email).first()
+        if user:
+            if check_password_hash(user.password, password):
+                login_user(user)
+                return redirect(url_for("get_all_posts"))
+            else:
+                flash("Invalid username or password", "danger")
+                return render_template("login.html", form=login_form)
+        else:
+            flash("User not found.")
+            return render_template("login.html", form=login_form)
+    else:
+        return render_template("login.html", form=login_form)
 
 @app.route('/logout')
 def logout():
+    logout_user()
     return redirect(url_for('get_all_posts'))
 
 @app.route('/')
