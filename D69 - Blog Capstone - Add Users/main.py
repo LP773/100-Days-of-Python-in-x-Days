@@ -6,12 +6,13 @@ from flask_ckeditor import CKEditor
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import Integer, String, Text
+from sqlalchemy import Integer, String, Text, ForeignKey
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 # Import your forms from the forms.py
-from forms import CreatePostForm, RegisterForm, LoginForm
+from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from functools import wraps
+from typing import List
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -33,12 +34,16 @@ db.init_app(app)
 class BlogPost(db.Model):
     __tablename__ = "blog_posts"
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Users Relationship
+    author: Mapped["Users"] = relationship(back_populates="posts")
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     title: Mapped[str] = mapped_column(String(250), unique=True, nullable=False)
     subtitle: Mapped[str] = mapped_column(String(250), nullable=False)
     date: Mapped[str] = mapped_column(String(250), nullable=False)
     body: Mapped[str] = mapped_column(Text, nullable=False)
-    author: Mapped[str] = mapped_column(String(250), nullable=False)
     img_url: Mapped[str] = mapped_column(String(250), nullable=False)
+    # Comment Relationship
+    comments: Mapped[List["Comments"]] = relationship(back_populates="parent_post")
 
 # TODO: Create a User table for all your registered users. 
 class Users(UserMixin, db.Model):
@@ -47,6 +52,21 @@ class Users(UserMixin, db.Model):
     email: Mapped[str] = mapped_column(String(250), nullable=False)
     password: Mapped[str] = mapped_column(String(250), nullable=False)
     name: Mapped[str] = mapped_column(String(250), nullable=False)
+    # Blog Post Relationship
+    posts: Mapped[List["BlogPost"]] = relationship(back_populates="author")
+    # Comments Relationship
+    comments: Mapped[List["Comments"]] = relationship(back_populates="comment_author")
+
+class Comments(db.Model):
+    __tablename__ = "comments"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # Users Relationship
+    author_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    comment_author: Mapped["Users"] = relationship(back_populates="comments")
+    # Blog Post Relationship
+    post_id: Mapped[int] = mapped_column(ForeignKey("blog_posts.id"))
+    parent_post: Mapped["BlogPost"] = relationship(back_populates="comments")
+    text: Mapped[str] = mapped_column(String(250), nullable=False)
 
 with app.app_context():
     db.create_all()
@@ -108,10 +128,20 @@ def get_all_posts():
     return render_template("index.html", all_posts=posts)
 
 # TODO: Allow logged-in users to comment on posts
-@app.route("/post/<int:post_id>")
+@app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
+    form = CommentForm()
     requested_post = db.get_or_404(BlogPost, post_id)
-    return render_template("post.html", post=requested_post)
+    if request.method == "POST":
+        if current_user.is_authenticated:
+            comment = request.form["body"]
+            db.session.add(Comments(text=comment, comment_author=current_user, post_id=post_id))
+            db.session.commit()
+            return redirect(url_for("show_post", post_id=post_id))
+        else:
+            flash("Please login or register to comment.", "danger")
+            return redirect(url_for("login"))
+    return render_template("post.html", post=requested_post, form=form)
 
 def admin_only(f):
     @wraps(f)
