@@ -13,3 +13,4 @@ x < 100 to x > 100 🫥
 - Skipped D50. Tinder requires facial verification to start swiping.
 - D54 - Introduction to Flask
 - D65 - Introduction to Web Design
+- D70 - Introduction to Git
